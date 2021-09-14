@@ -40,7 +40,9 @@ private:
 	void scheduleEventIntervalStart(const string &eventID, const oadr2b::oadr::oadrEvent *event, const oadr2b::ei::eiEventSignalType *eventSignal, string uid, float payload, time_t dtstart, int durationInSeconds);
 
 	void handleNewEvent(const string &eventID, const oadr2b::oadr::oadrEvent *event, const string &requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses);
+	void handleNewEvent(const string &eventID, const oadr2b::oadr::oadrEvent *event, const string &requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses, oadr2b::ei::OptTypeType::value optTy1);
 	void handleExistingEvent(const string &eventID, const oadr2b::oadr::oadrEvent *event, const string &requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses);
+	void handleExistingEvent(const string &eventID, const oadr2b::oadr::oadrEvent *event, const string &requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses, oadr2b::ei::OptTypeType::value optMo1);
 
 public:
 	EventManager(IScheduler *scheduler, IEventService *service, ISendCreatedEvent *sendCreatedEvent);
@@ -52,6 +54,7 @@ public:
 	void removeSchedule(const string &eventID);
 
 	void manageEvents(oadr2b::oadr::oadrDistributeEventType &message);
+	void manageEvents(oadr2b::oadr::oadrDistributeEventType &message, oadr2b::ei::OptTypeType::value optTy2);
 };
 
 #endif /* OADR_OADR_VEN_VENMANAGER_EVENTMANAGER_H_ */

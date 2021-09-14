@@ -7,6 +7,8 @@
 
 #include "../manager/VENManager.h"
 
+oadr2b::ei::OptTypeType VENManager::optValue = oadr2b::ei::OptTypeType::optOut;			// Just declare.
+
 VENManager::VENManager(unique_ptr<VEN2b> ven, IEventService *eventService, IReportService *reportService, IOADRExceptionService *exceptionService) :
 	m_ven(std::move(ven)),
 	m_reportService(reportService),
@@ -94,6 +96,9 @@ IVENManager *VENManager::init(VENManagerConfig &config)
 			config.services.reportService,
 			config.services.exceptionService);
 
+	optValue = config.optType;
+	cout << "\n>>>>>>>>>> " << string(optValue) << " <<<<<<<<<<\n" << endl;
+
 	return venManager;
 }
 
@@ -133,7 +138,7 @@ void VENManager::poll()
 	}
 	else if (response->oadrSignedObject().oadrDistributeEvent().present())
 	{
-		m_eventManager->manageEvents(response->oadrSignedObject().oadrDistributeEvent().get());
+		m_eventManager->manageEvents(response->oadrSignedObject().oadrDistributeEvent().get(), getOptType());	// Pass the opt value here. (This for new event created)
 	}
 	else if (response->oadrSignedObject().oadrCreateReport().present())
 	{
@@ -184,7 +189,7 @@ void VENManager::requestEvents()
 {
 	unique_ptr<RequestEvent> request = m_ven->requestEvent();
 
-	m_eventManager->manageEvents(request->response()->oadrSignedObject().oadrDistributeEvent().get());
+	m_eventManager->manageEvents(request->response()->oadrSignedObject().oadrDistributeEvent().get(), getOptType()); 	// Pass the opt value here. (This for old event)
 }
 
 /********************************************************************************/

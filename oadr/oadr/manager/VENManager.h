@@ -49,6 +49,8 @@ private:
 
 	bool m_shutdown;
 
+	static oadr2b::ei::OptTypeType optValue;
+
 	virtual void sendCreatedEvent(string responseCode, string responseDescription, string requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses);
 
 	virtual void sendUpdateReport(oadrUpdateReportType::oadrReport_sequence &sequence, time_t dtstart, string reportRequestID, time_t createdDateTime);
@@ -82,6 +84,10 @@ public:
 	virtual void stop();
 
 	Scheduler *getScheduler();
+
+	static oadr2b::ei::OptTypeType getOptType(){		// custom lib.
+		return optValue;
+	}
 };
 
 #endif /* VENMANAGER_H_ */

@@ -33,20 +33,26 @@ void signalHandler (int signum)
 void printUsage()
 {
 	cout << "Usage: " << endl;
-	cout << "  ./samplevenmgr <vtn url> <ven name> true" << endl;
+	cout << "\n    ./venmgr <vtn url> <ven name> <defaultOpt in/out> true" << endl;
+	cout << "Ex. ./venmgr http(s)://123.456.78.90:8080/ TH_VEN in true\n" << endl;
 }
 
 /********************************************************************************/
 
 bool parseParams(int argc, char **argv)
 {
-	if (argc < 3)
+	if (argc < 4)			// Support default opt argument.
 		return false;
 
 	config.vtnURL = argv[1];
 	config.venName = argv[2];
 
-	if (argc == 4 && strcmp(argv[3], "false") == 0)
+	if (strcmp(argv[3], "in") == 0)
+		config.optType = oadr2b::ei::OptTypeType::optIn;
+	else
+		config.optType = oadr2b::ei::OptTypeType::optOut;
+
+	if (argc == 5 && strcmp(argv[4], "false") == 0)
 		logToStdout = false;
 
 	return true;

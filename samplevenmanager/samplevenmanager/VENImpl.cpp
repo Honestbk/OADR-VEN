@@ -18,6 +18,8 @@ using namespace std;
 namespace samplevenmanager
 {
 
+oadr2b::ei::OptTypeType VENImpl::checkOptType = oadr2b::ei::OptTypeType::optOut;		// declare in samplevenmanager namespace.
+
 VENImpl::VENImpl(string venName, bool logToStdout)
 {
 	el::Configurations conf;
@@ -164,7 +166,7 @@ void VENImpl::OnGenerateRegisterReport(oadrRegisterReportType::oadrReport_sequen
 void VENImpl::OnEventStart(const std::string& eventID,
 		const oadr2b::oadr::oadrEvent* event, unsigned int remainingDurationInSeconds)
 {
-	LOG(INFO) << "event start: "  << eventID;
+	LOG(INFO) << "event start: "  << eventID << " | Chosen optType = " << checkOptType;
 }
 
 /********************************************************************************/
@@ -172,7 +174,8 @@ void VENImpl::OnEventStart(const std::string& eventID,
 void VENImpl::OnEventComplete(const std::string& eventID,
 		const oadr2b::oadr::oadrEvent* event)
 {
-	LOG(INFO) << "event complete: "  << eventID;
+	LOG(INFO) << "event complete: "  << eventID << " | Chosen optType = " << checkOptType;
+	ctrlResourceOn(checkOptType);
 }
 
 /********************************************************************************/
@@ -182,7 +185,8 @@ void VENImpl::OnEventIntervalStart(const std::string& eventID,
 		const oadr2b::ei::eiEventSignalType* eventSignal, std::string uid,
 		float payload, time_t dtstart, unsigned int remainingDurationInSeconds)
 {
-	LOG(INFO) << "event interval start: " << eventID << payload << " " << remainingDurationInSeconds;
+	LOG(INFO) << "event interval start: " << eventID << payload << " | Remaining " << remainingDurationInSeconds << " seconds";
+	ctrlResourceOff(checkOptType);
 }
 
 /********************************************************************************/
@@ -190,7 +194,9 @@ void VENImpl::OnEventIntervalStart(const std::string& eventID,
 void VENImpl::OnEventNew(const std::string& eventID,
 		const oadr2b::oadr::oadrEvent* event, oadr2b::ei::OptTypeType::value &optType)
 {
-	LOG(INFO) << "new event received: " << eventID;
+	const oadr2b::ei::OptTypeType x = optType;
+	LOG(INFO) << "new event received: " << eventID << " | setDefaultOpt = " << string(x);
+	checkOptType = optType;				// store opt value.
 }
 
 /********************************************************************************/
@@ -199,7 +205,8 @@ void VENImpl::OnEventModify(const std::string& eventID,
 		const oadr2b::oadr::oadrEvent* newEvent,
 		const oadr2b::oadr::oadrEvent* oldEvent, oadr2b::ei::OptTypeType::value &optType)
 {
-	LOG(INFO) << "event modified: " << eventID;
+	const oadr2b::ei::OptTypeType x = optType;
+	LOG(INFO) << "event modified: " << eventID << " | setDefaultOpt = " << string(x);
 }
 
 /********************************************************************************/
@@ -207,7 +214,8 @@ void VENImpl::OnEventModify(const std::string& eventID,
 void VENImpl::OnEventCancel(const std::string& eventID,
 		const oadr2b::oadr::oadrEvent* event, oadr2b::ei::OptTypeType::value &optType)
 {
-	LOG(INFO) << "event cancelled: " << eventID;
+	const oadr2b::ei::OptTypeType x = optType;
+	LOG(INFO) << "event cancelled: " << eventID << " | setDefaultOpt = " << string(x);
 }
 
 /********************************************************************************/
@@ -268,5 +276,24 @@ void VENImpl::VENImpl::OnException(std::exception &ex)
 	LOG(ERROR) << "std exception : " << ex.what();
 }
 
+/********************************************************************************/
+
+void VENImpl::ctrlResourceOff(oadr2b::ei::OptTypeType xOpt)
+{
+	if(xOpt == oadr2b::ei::OptTypeType::optIn)
+	{
+		cout << "\n\t>>>>> YOUR APPLIANCE IS TURNING OFF <<<<<\n" << endl;
+	}
+}
+
+void VENImpl::ctrlResourceOn(oadr2b::ei::OptTypeType xOpt)
+{
+	if(xOpt == oadr2b::ei::OptTypeType::optIn)
+	{
+		cout << "\n\t>>>>> YOUR APPLIANCE IS TURNING ON <<<<<\n" << endl;
+	}
+}
+
+/********************************************************************************/
 } /* namespace samplevenmanager */
 

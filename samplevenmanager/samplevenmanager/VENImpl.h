@@ -27,6 +27,8 @@ public:
 	VENImpl(string venName, bool logToStdout);
 	virtual ~VENImpl();
 
+	static oadr2b::ei::OptTypeType checkOptType;	// This variable is in the samplevenmanager namespace, so in .cpp should declare in that namespace.
+
 	virtual void OnPeriodicReportStart(const oadrReportRequestType &reportRequest);
 
 	virtual void OnPeriodicReportComplete(const oadrReportRequestType &reportRequest);
@@ -48,7 +50,7 @@ public:
 	virtual void OnEventNew(const std::string &eventID, const oadr2b::oadr::oadrEvent *event, oadr2b::ei::OptTypeType::value &optType);
 	virtual void OnEventModify(const std::string &eventID, const oadr2b::oadr::oadrEvent *newEvent, const oadr2b::oadr::oadrEvent *oldEvent, oadr2b::ei::OptTypeType::value &optType);
 	virtual void OnEventCancel(const std::string &eventID, const oadr2b::oadr::oadrEvent *event, oadr2b::ei::OptTypeType::value &optType);
-	virtual void OnEventImplicitCancel(const std::string &eventID, const oadr2b::oadr::oadrEvent *event);
+	virtual void OnEventImplicitCancel(const std::string &eventID, const oadr2b::oadr::oadrEvent *event);		// Destroy Event.
 
 	virtual void OnProcessDistributeEventStart();
 	virtual void OnGenerateCreatedEvent(oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses);
@@ -59,6 +61,9 @@ public:
 
 	virtual void OnCurlException(CurlException &ex);
 	virtual void OnException(std::exception &ex);
+
+	virtual void ctrlResourceOff(oadr2b::ei::OptTypeType xOpt);
+	virtual void ctrlResourceOn(oadr2b::ei::OptTypeType xOpt);
 };
 
 } /* namespace samplevenmanager */

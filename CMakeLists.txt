@@ -58,8 +58,8 @@ if (SAMPLE)
   # ---- samplevenmanager ----
   add_definitions(-DELPP_THREAD_SAFE -DELPP_NO_DEFAULT_LOG_FILE)
   file(GLOB_RECURSE samplevenmanager_SRC ./samplevenmanager/samplevenmanager/*.cpp)
-  add_executable(samplevenmgr ${samplevenmanager_SRC})
-  target_link_libraries (samplevenmgr LINK_PUBLIC oadr oadrsd curl xerces-c pthread)
+  add_executable(venmgr ${samplevenmanager_SRC})
+  target_link_libraries (venmgr LINK_PUBLIC oadr oadrsd curl xerces-c pthread)
 endif()
 
 if (TEST)

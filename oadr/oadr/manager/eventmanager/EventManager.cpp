@@ -243,6 +243,46 @@ void EventManager::handleExistingEvent(const string &eventID, const oadr2b::oadr
 
 	m_events[eventID] = unique_ptr<oadr2b::oadr::oadrEvent>(eventCopy);
 }
+/* handleExistingEvent edited. */
+void EventManager::handleExistingEvent(const string &eventID, const oadr2b::oadr::oadrEvent *event, const string &requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses, oadr2b::ei::OptTypeType::value optMo1)
+{
+	oadr2b::oadr::oadrEvent *existingEvent = m_events[eventID].get();
+
+	// The event hasn't been modified
+	if (existingEvent->eiEvent().eventDescriptor().modificationNumber() ==
+			event->eiEvent().eventDescriptor().modificationNumber())
+	{
+		return;
+	}
+
+	oadr2b::oadr::oadrEvent *eventCopy = event->_clone();
+
+	if (event->eiEvent().eventDescriptor().eventStatus() == EventStatusEnumeratedType::cancelled)
+	{
+		oadr2b::ei::OptTypeType::value optType = optMo1;			//<< Modified here.
+
+		m_service->OnEventCancel(eventID, event, optType);
+
+		Oadr2bHelper::appendEventResponse(eventResponses, "200", "OK", eventID,
+				event->eiEvent().eventDescriptor().modificationNumber(), optType, requestID);
+
+		removeSchedule(eventID);
+	}
+	else
+	{
+		oadr2b::ei::OptTypeType::value optType = optMo1;			//<< Modified here.
+
+		m_service->OnEventModify(eventID, event, existingEvent, optType);
+
+		Oadr2bHelper::appendEventResponse(eventResponses, "200", "OK", eventID,
+				event->eiEvent().eventDescriptor().modificationNumber(), optType, requestID);
+
+		removeSchedule(eventID);
+		scheduleEvent(eventID, eventCopy);
+	}
+
+	m_events[eventID] = unique_ptr<oadr2b::oadr::oadrEvent>(eventCopy);
+}
 
 /********************************************************************************/
 
@@ -253,6 +293,22 @@ void EventManager::handleNewEvent(const string &eventID, const oadr2b::oadr::oad
 	m_events[eventID] = unique_ptr<oadr2b::oadr::oadrEvent>(eventCopy);
 
 	oadr2b::ei::OptTypeType::value optType = oadr2b::ei::OptTypeType::optOut;
+
+	m_service->OnEventNew(eventID, eventCopy, optType);
+
+	Oadr2bHelper::appendEventResponse(eventResponses, "200", "OK", eventID,
+			eventCopy->eiEvent().eventDescriptor().modificationNumber(), optType, requestID);
+
+	scheduleEvent(eventID, eventCopy);
+}
+/* handleNewEvent edited. */
+void EventManager::handleNewEvent(const string &eventID, const oadr2b::oadr::oadrEvent *event, const string &requestID, oadr2b::ei::eventResponses::eventResponse_sequence &eventResponses, oadr2b::ei::OptTypeType::value optTy1)
+{
+	oadr2b::oadr::oadrEvent *eventCopy = event->_clone();
+
+	m_events[eventID] = unique_ptr<oadr2b::oadr::oadrEvent>(eventCopy);
+
+	oadr2b::ei::OptTypeType::value optType = optTy1;				//<< Modified here.
 
 	m_service->OnEventNew(eventID, eventCopy, optType);
 
@@ -286,6 +342,51 @@ void EventManager::manageEvents(oadr2b::oadr::oadrDistributeEventType &message)
 		{
 			// Check if the event has been modified
 			handleExistingEvent(eventID, &event, message.requestID(), eventResponses);
+		}
+
+		processedEventIDs.insert(eventID);
+	}
+
+	// Send a cancel event message for any events not included in the incoming message
+	for (const auto &event : m_events)
+	{
+		const string eventID = event.first;
+
+		if (processedEventIDs.find(eventID) == processedEventIDs.end())
+		{
+			m_service->OnEventImplicitCancel(eventID, event.second.get());
+
+			removeSchedule(eventID);
+
+			m_events.erase(eventID);
+		}
+	}
+
+	m_sendCreatedEvent->sendCreatedEvent("200", "OK", message.requestID(), eventResponses);
+}
+/* manageEvents edited. */
+void EventManager::manageEvents(oadr2b::oadr::oadrDistributeEventType &message, oadr2b::ei::OptTypeType::value optTy2)
+{
+	oadrDistributeEventType::oadrEvent_iterator itr;
+
+	set<string> processedEventIDs;
+
+	oadr2b::ei::eventResponses::eventResponse_sequence eventResponses;
+
+	for (const auto &event : message.oadrEvent())
+	{
+		const string eventID = event.eiEvent().eventDescriptor().eventID();
+
+		// Does the event exist in the current map?
+		if (m_events.find(eventID) == m_events.end())
+		{
+			// This is a new event that needs to be scheduled
+			handleNewEvent(eventID, &event, message.requestID(), eventResponses, optTy2);		//<< Modified here.
+		}
+		else
+		{
+			// Check if the event has been modified
+			handleExistingEvent(eventID, &event, message.requestID(), eventResponses, optTy2);	//<< Modified here.
 		}
 
 		processedEventIDs.insert(eventID);

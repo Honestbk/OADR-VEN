@@ -51,6 +51,7 @@ struct VENManagerConfig
 	std::string venName;
 	std::string venID;
 	std::string registrationID;
+	oadr2b::ei::OptTypeType optType = oadr2b::ei::OptTypeType::optOut;
 
 	ttls tls;
 
